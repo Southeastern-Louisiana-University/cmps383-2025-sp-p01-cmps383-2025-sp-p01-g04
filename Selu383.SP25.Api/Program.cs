@@ -1,3 +1,10 @@
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Selu383.SP25.Api.Data;
+using Selu383.SP25.Api.Seeding;
+using Microsoft.OpenApi.Models;
 
 namespace Selu383.SP25.Api
 {
@@ -7,25 +14,34 @@ namespace Selu383.SP25.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "CMPS 383 API", Version = "v1" });
+            });
+
+
+            var connectionString = builder.Configuration.GetConnectionString("DataContext");
+            builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
+            builder.Services.AddScoped<DbInitializer>();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+                DbInitializer.Initialize(dbContext);
+            }
+
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CMPS 383 API v1"));
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
 
             app.Run();
