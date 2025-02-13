@@ -8,8 +8,7 @@ namespace Selu383.SP25.Api.Seeding
     {
         internal static void Initialize(DataContext dbContext)
         {
-            ArgumentNullException.ThrowIfNull(dbContext, nameof(dbContext));
-            dbContext.Database.EnsureCreated();
+            dbContext.Database.Migrate();
 
             if (!dbContext.Theaters.Any())
             {

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.Api.Data;
 using Selu383.SP25.Api.Seeding;
 using Microsoft.OpenApi.Models;
+using System.Data.Common;
 
 namespace Selu383.SP25.Api
 {
@@ -22,9 +23,7 @@ namespace Selu383.SP25.Api
             });
 
 
-            var connectionString = builder.Configuration.GetConnectionString("DataContext");
-            builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
-            builder.Services.AddScoped<DbInitializer>();
+            builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext")));
 
             var app = builder.Build();
 
